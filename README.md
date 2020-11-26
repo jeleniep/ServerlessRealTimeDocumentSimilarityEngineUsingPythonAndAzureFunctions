@@ -40,3 +40,10 @@ Initial Data flow
 | 9.12  |Blob storage policy (Model)|how to store model in blob storage
 | 17.12 |Trainer| function for model learning
 | 14.01 |Searcher| end user accessible function
+
+
+## Contributors
+
+Piotr Jeleniewicz
+Aleksei Haidukevich
+Patryk Piętka
