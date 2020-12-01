@@ -1,0 +1,6 @@
+- Czy używacie functions i blob storage jest wystarczające?
+- Na jakiej podstawie mamy ustalać podobieństwo do wyszukiwania?
+Czy mamy poszukiwać w artukułach słów zbliżonych do słowa, 
+które zostało podane do wyszukiwarki?
+- Co rozumiemy przez środowisko wdrożeniowe?
+- Czy nasze rozwiązanie ma przeszukiwać zescrapowane artykuły?
