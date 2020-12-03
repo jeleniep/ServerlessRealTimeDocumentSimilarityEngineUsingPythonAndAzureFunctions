@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, NavigableString, Tag, Comment
 from typing import List
 import requests
 
@@ -37,16 +37,26 @@ replace_tag("a")
 
 toc = content.find("div", "toclimit-3")
 toc.decompose()
-
-photos = content.find_all("div", "thumb tright")
-refferences = content.find_all(attrs={"class": "reference"})
-reflists = content.find_all(attrs={"class": "reflist"})
+photos = content.find_all("div", attrs={"class": ["thumb"]})
+refferences = content.find_all(attrs={"class": ["reference"]})
+reflists = content.find_all(attrs={"class": ["reflist"]})
 galleries = content.find_all("ul", "gallery")
 tables = content.find_all("table")
 styles = content.find_all("style")
 spans = content.find_all("span", "mw-editsection")
+photos = content.find_all("img")
+comments = content.findAll(text=lambda text: isinstance(text, Comment))
+
+
+ref = content.find(id="See_also")
+ref_par = ref.parent
+footer = [ref_par]
+footer.extend(ref_par.find_all_next("div"))
+footer.extend(ref_par.find_all_next("h2"))
+footer.extend(ref_par.find_all_next("ul"))
 
 junk = []
+junk.extend(footer)
 junk.extend(photos)
 junk.extend(refferences)
 junk.extend(reflists)
@@ -54,12 +64,16 @@ junk.extend(galleries)
 junk.extend(tables)
 junk.extend(styles)
 junk.extend(spans)
+junk.extend(photos)
 
 for i in junk:
+    print(i.attrs)
     i.decompose()
 
-ref = content.find(id="References")
-ref_par = ref.parent
+for i in comments:
+    i.replace_with("")
 
-with open("output.html", "w", encoding="utf-8") as f:
+content.smooth()
+
+with open("output_ref.html", "w", encoding="utf-8") as f:
     f.write(str(content))
