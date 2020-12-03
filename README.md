@@ -44,6 +44,6 @@ Initial Data flow
 
 ## Contributors
 
-Piotr Jeleniewicz
-Aleksei Haidukevich
-Patryk Piętka
+- Piotr Jeleniewicz
+- Aleksei Haidukevich
+- Patryk Piętka
