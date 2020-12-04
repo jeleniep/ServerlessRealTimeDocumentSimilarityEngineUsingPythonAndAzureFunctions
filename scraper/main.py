@@ -3,12 +3,6 @@ from typing import List
 import requests
 import yaml
 
-with open("urls.yaml") as file:
-    urls = yaml.safe_load(file)
-
-r = requests.get(urls[1])
-text = r.text
-
 
 def unwrap_all(content: Tag, tag: str):
     links = content.find_all(tag)
@@ -29,7 +23,7 @@ def sanitize(content: Tag):
     styles = content.find_all("style")
     spans = content.find_all("span", "mw-editsection")
     photos = content.find_all("img")
-    pronunciation = abstract.find_all("span", "rt-commentedText")
+    pronunciation = content.find_all("span", "rt-commentedText")
     comments = content.findAll(text=lambda text: isinstance(text, Comment))
 
     footer: List[Tag] = []
@@ -64,7 +58,7 @@ def sanitize(content: Tag):
 
 
 def scrap(text: str):
-    soup = BeautifulSoup(text, "html.parser")
+    soup = BeautifulSoup(text, "lxml")
     l = soup.body.contents
     document_name = l[4].h1.string
     bodyContent = l[4]
@@ -83,3 +77,17 @@ def scrap(text: str):
 
     with open(f"{document_name}.txt", "w", encoding="utf-8") as f:
         f.write(abstract_text)
+
+
+def main():
+    with open("urls.yaml") as file:
+        urls = yaml.safe_load(file)
+
+    for url in urls:
+        r = requests.get(url)
+        text = r.text
+        scrap(text)
+
+
+if __name__ == "__main__":
+    main()
