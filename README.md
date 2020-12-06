@@ -29,6 +29,10 @@ Initial Data flow
     - Scrapy
     - Nltk (Natural language toolkit)
 
+## Wikipedia
+Wikipedia's robots.txt doesn't disallow scraping of article pages
+
+
 ## Time table:
 
 
