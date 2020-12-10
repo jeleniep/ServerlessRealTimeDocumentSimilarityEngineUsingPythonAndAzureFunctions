@@ -152,7 +152,7 @@ if format == 'TXT':
 elif format == 'YML':
     print('Writing it to urls.yml')
     with open('urls.yml', 'w') as f:
-        f.write('---')
+        f.write('---\n')
         f.write('# urls:')
         for link in output.values():
             f.write( f'\n- {link}')

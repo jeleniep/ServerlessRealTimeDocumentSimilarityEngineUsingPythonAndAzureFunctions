@@ -3,6 +3,13 @@ from typing import List
 import requests
 import yaml
 
+import os
+
+folderpath = 'scraped/'
+if not os.path.exists(folderpath):
+    os.makedirs(folderpath)
+
+
 
 def unwrap_all(content: Tag, tag: str):
     links = content.find_all(tag)
@@ -75,8 +82,8 @@ def scrap(text: str):
 
     abstract_text = abstract.get_text()
 
-    with open(f"{document_name}.txt", "w", encoding="utf-8") as f:
-        f.write(abstract_text)
+    with open(f"{folderpath}{document_name}.txt", "w", encoding="utf-8") as f:
+        f.write( abstract_text )
 
 
 def main():
