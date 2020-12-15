@@ -1,23 +1,29 @@
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__
+import azure.functions as func
+from . import simgine
 import logging
 import os
+import sys
+import json
+import tempfile
 
-import azure.functions as func
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__
+sys.path.append("..")
 
-connection_string=os.getenv('AzureWebJobsStorage')
+connection_string = os.getenv('AzureWebJobsStorage')
 
 service = BlobServiceClient.from_connection_string(conn_str=connection_string)
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
-    req.method
 
-    blob = BlobClient.from_connection_string(conn_str=connection_string, container_name="simgine-data", blob_name="pytania.txt")
-    with open("./test.txt", "wb") as my_blob:
-        print("asdasd", flush=True)
+def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
+    blob = BlobClient.from_connection_string(
+        conn_str=connection_string, container_name="simgine-data", blob_name="doc2vec.model"
+    )
+    foldername = tempfile.gettempdir()
+    print(foldername, flush=True)
+    with open(foldername + "/doc2vec.model", "wb") as my_blob:
         blob_data = blob.download_blob()
         blob_data.readinto(my_blob)
-
 
     name = req.params.get('name')
     if not name:
@@ -29,9 +35,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             name = req_body.get('name')
 
     if name:
-        return func.HttpResponse(f"Hello team, {name}. This HTTP triggered function executed successfully. {req.method}")
+        response = simgine(name, foldername + "/doc2vec.model")
+        return func.HttpResponse(
+            json.dumps(response),
+            mimetype='application/json'
+        )
     else:
         return func.HttpResponse(
-             "This HTTPs triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
+            "Pass article name as 'name' query string. Example: '?name=Jaguar'",
+            status_code=400
         )
