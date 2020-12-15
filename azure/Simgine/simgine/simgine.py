@@ -1,9 +1,11 @@
 import logging
+import os
 
 import azure.functions as func
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__
 
-connection_string=""
+connection_string=os.getenv('AzureWebJobsStorage')
+
 service = BlobServiceClient.from_connection_string(conn_str=connection_string)
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -11,7 +13,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     req.method
 
     blob = BlobClient.from_connection_string(conn_str=connection_string, container_name="simgine-data", blob_name="pytania.txt")
-    with open("./BlockDestination.txt", "wb") as my_blob:
+    with open("./test.txt", "wb") as my_blob:
         print("asdasd", flush=True)
         blob_data = blob.download_blob()
         blob_data.readinto(my_blob)
