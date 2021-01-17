@@ -86,26 +86,28 @@ def scrap(text: str):
 
     # @pietkap
     try:
-        abstract: Tag = content.find("p", attrs={"class": None})
+        paragraphs: List[Tag] = content.find_all("p", attrs={"class": None})
     except AttributeError as err:
         print(err)
         print(document_name)
         return -1
+    teksts: List[str] = []
+    for par in paragraphs:
+        resp = sanitize(par)
+        # print(resp)
+        if resp == -1:
+            return -1
+        unwrap_all(par, "b")
+        unwrap_all(par, "a")
+        unwrap_all(par, "i")
+        unwrap_all(par, "span")
 
-    resp = sanitize(abstract)
-    # print(resp)
-    if resp == -1:
-        return -1
-    unwrap_all(abstract, "b")
-    unwrap_all(abstract, "a")
-    unwrap_all(abstract, "i")
-    unwrap_all(abstract, "span")
-
-    abstract_text = abstract.get_text()
+        teksts.append(par.get_text())
 
     with open(f"{folderpath}{document_name}.txt", "w", encoding="utf-8") as f:
         # print( f'Saved to {folderpath}{document_name}.txt' )
-        f.write(abstract_text)
+        for i in teksts:
+            f.write(i)
 
 
 def main():
