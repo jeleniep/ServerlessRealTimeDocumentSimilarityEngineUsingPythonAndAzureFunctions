@@ -70,6 +70,13 @@ def sanitize(content: Tag):
     content.smooth()
 
 
+def extract_categories(categories):
+    cats = []
+    for item in categories.children:
+        cats.append(item.get_text())
+    return cats
+
+
 def scrap(text: str):
     soup = BeautifulSoup(text, "lxml")
     l = soup.body.contents
@@ -83,7 +90,12 @@ def scrap(text: str):
     # print(type(bodyContent))
 
     content = bodyContent.find(id="mw-content-text").div
+    categories = bodyContent.find(id="catlinks").div.ul
+    hidden_categories = bodyContent.find(id="mw-hidden-catlinks").ul
 
+    cats = extract_categories(categories)
+    hidden_cats = extract_categories(hidden_categories)
+    article_cats = {"Categories": cats, "Hidden Categories": hidden_cats}
     # @pietkap
     try:
         paragraphs: List[Tag] = content.find_all("p", attrs={"class": None})
@@ -108,6 +120,8 @@ def scrap(text: str):
         # print( f'Saved to {folderpath}{document_name}.txt' )
         for i in teksts:
             f.write(i)
+    with open(f"{folderpath}{document_name}.yaml", "w", encoding="utf-8") as f:
+        yaml.dump(article_cats, f)
 
 
 def main():
