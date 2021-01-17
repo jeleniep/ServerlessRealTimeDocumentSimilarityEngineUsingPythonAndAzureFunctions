@@ -12,11 +12,17 @@ PARAMETERS
 Category names from this page:
 https://en.wikipedia.org/wiki/Wikipedia:Contents/Categories
 or any other subcategory link which starts with Category:
+
+Car Brands + Big Cats = Jaguar overlapping
 '''
 cat_list = [
-    # 'Ecology',
+    #'Computer Science',
+    'Car Brands',
+    'Fender electric guitars',
     # 'Natural Resources',
-    'Animals'
+    # 'New Wave of British Heavy Metal musical groups', # doesnt work?
+    'Home video game consoles',
+    'Big Cats'
 ]
 
 '''how many times we will enter the subcategory level'''

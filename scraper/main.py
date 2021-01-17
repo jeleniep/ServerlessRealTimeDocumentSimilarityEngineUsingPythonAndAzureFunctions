@@ -2,8 +2,9 @@ from bs4 import BeautifulSoup, NavigableString, Tag, Comment
 from typing import List
 import requests
 import yaml
+from tqdm import tqdm
 
-import os
+import os, sys
 
 folderpath = 'scraped/'
 if not os.path.exists(folderpath):
@@ -19,7 +20,12 @@ def unwrap_all(content: Tag, tag: str):
 
 
 def sanitize(content: Tag):
-    toc = content.find("div", "toclimit-3")
+    # @pietkap
+    try:
+        toc = content.find("div", "toclimit-3")
+    except AttributeError:
+        return -1
+
     if toc:
         toc.decompose()
     photos = content.find_all("div", attrs={"class": ["thumb"]})
@@ -62,19 +68,33 @@ def sanitize(content: Tag):
         i.replace_with("")
 
     content.smooth()
+    
 
 
 def scrap(text: str):
     soup = BeautifulSoup(text, "lxml")
     l = soup.body.contents
+    # print(len(l))
+    # print(l[4])
+    # sys.exit()
+    # TODO: replace spaces with underscores
     document_name = l[4].h1.string
     bodyContent = l[4]
 
+    # print(type(bodyContent))
+
     content = bodyContent.find(id="mw-content-text").div
 
-    abstract: Tag = content.find("p").find_next_sibling("p")
+    # @pietkap
+    try:
+        abstract: Tag = content.find("p").find_next_sibling("p")
+    except AttributeError:
+        return -1
 
-    sanitize(abstract)
+    resp = sanitize(abstract)
+    # print(resp)
+    if resp == -1:
+        return -1
     unwrap_all(abstract, "b")
     unwrap_all(abstract, "a")
     unwrap_all(abstract, "i")
@@ -83,17 +103,31 @@ def scrap(text: str):
     abstract_text = abstract.get_text()
 
     with open(f"{folderpath}{document_name}.txt", "w", encoding="utf-8") as f:
+        # print( f'Saved to {folderpath}{document_name}.txt' )
         f.write( abstract_text )
 
 
 def main():
-    with open("urls.yaml") as file:
+    with open("urls.yml") as file:
         urls = yaml.safe_load(file)
 
-    for url in urls:
+    already = os.listdir( folderpath )
+    errors = 0
+    for url in tqdm(urls):
+
+        fn = url.split('/')[-1] + '.txt'
+        if fn in already:
+            print( f'{fn} already exists' )
+            continue
+
         r = requests.get(url)
         text = r.text
-        scrap(text)
+
+        if scrap(text) == -1:
+            print( f'Error writing {url}' )
+            errors += 1
+                
+    print( f'Brought {len(urls)-errors}/{len(urls)} articles.' )
 
 
 if __name__ == "__main__":
