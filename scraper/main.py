@@ -6,10 +6,9 @@ from tqdm import tqdm
 
 import os, sys
 
-folderpath = 'scraped/'
+folderpath = "scraped/"
 if not os.path.exists(folderpath):
     os.makedirs(folderpath)
-
 
 
 def unwrap_all(content: Tag, tag: str):
@@ -23,7 +22,8 @@ def sanitize(content: Tag):
     # @pietkap
     try:
         toc = content.find("div", "toclimit-3")
-    except AttributeError:
+    except AttributeError as err:
+        print(err)
         return -1
 
     if toc:
@@ -68,7 +68,6 @@ def sanitize(content: Tag):
         i.replace_with("")
 
     content.smooth()
-    
 
 
 def scrap(text: str):
@@ -87,8 +86,10 @@ def scrap(text: str):
 
     # @pietkap
     try:
-        abstract: Tag = content.find("p").find_next_sibling("p")
-    except AttributeError:
+        abstract: Tag = content.find("p", attrs={"class": None})
+    except AttributeError as err:
+        print(err)
+        print(document_name)
         return -1
 
     resp = sanitize(abstract)
@@ -104,30 +105,33 @@ def scrap(text: str):
 
     with open(f"{folderpath}{document_name}.txt", "w", encoding="utf-8") as f:
         # print( f'Saved to {folderpath}{document_name}.txt' )
-        f.write( abstract_text )
+        f.write(abstract_text)
 
 
 def main():
-    with open("urls.yml") as file:
+    with open("urls.yml", "r", encoding="utf-8") as file:
         urls = yaml.safe_load(file)
 
-    already = os.listdir( folderpath )
+    already = os.listdir(folderpath)
     errors = 0
     for url in tqdm(urls):
 
-        fn = url.split('/')[-1] + '.txt'
+        fn = url.split("/")[-1] + ".txt"
         if fn in already:
-            print( f'{fn} already exists' )
+            print(f"{fn} already exists")
             continue
 
         r = requests.get(url)
-        text = r.text
+        if r.status_code == 200:
+            text = r.text
 
-        if scrap(text) == -1:
-            print( f'Error writing {url}' )
-            errors += 1
-                
-    print( f'Brought {len(urls)-errors}/{len(urls)} articles.' )
+            if scrap(text) == -1:
+                print(f"Error writing {url}")
+                errors += 1
+        else:
+            print(f"Error fetching url: {url}")
+
+    print(f"Brought {len(urls)-errors}/{len(urls)} articles.")
 
 
 if __name__ == "__main__":
