@@ -1,52 +1,111 @@
+import yaml
+from gensim.models.doc2vec import Doc2Vec
 
 
 
+def simgine( article_title, model_path='doc2vec.model' ):
 
-def simgine( article_title ):
+    print( f'\n=========================== {article_title} ===========================\n' )
+    try:
+        with open(f"../scraper/scraped/{article_title}.yaml", "r", encoding="utf-8") as yaml_file:
+            parsed = yaml.load(yaml_file, Loader=yaml.FullLoader)
+            cats = set( parsed['Categories'] )
+    except:
+        print( f'No YAML file for {article_title}' )
+        cats = None
 
-    from gensim.models.doc2vec import Doc2Vec
 
-    fname = 'doc2vec.model'
+    model = Doc2Vec.load( model_path )
+    # print( f'\nSuccesfully loaded {model_path}' )
+
+
+    # print( model.docvecs.distance( 'GameCube', 'Honda' ) )
+    # return
+
+    acc = 0
+    TOP = 20
+    row = '\t{:<40}{:<13}{}'
+    wiki_prefix = 'https://en.wikipedia.org/wiki/'
     
-    model = Doc2Vec.load( fname )
-    print( f'\nSuccesfully loaded {fname}' )
+    
+    similar_doc = model.docvecs.most_similar( article_title, topn=TOP )
 
-    similar_doc = model.docvecs.most_similar( article_title )
+    print( f'Original link: {wiki_prefix}{article_title.replace(" ", "_")}' )
+    if cats:
+        print( f'Article has {len(cats)} Categories:' )
+        for c in cats:
+            print( f'\t* {c}' )
+    print( f'\nTop {TOP} Wikipedia articles most similar to {article_title}:\n' )
+    print( row.format( 'Article', 'Cosine Sim', 'Mutual Categories' ), '\n' )
 
-    row = '\t\t{:<35}{}'
-    print( f'\nTop 10 Wikipedia articles most similar to {article_title}:\n' )
-    print( row.format( 'Article', 'Cosine Sim <-1; 1>' ), '\n' )
+    for i, pair in enumerate(similar_doc[0:TOP]):
+        other_title = pair[0]
+        # url = wiki_prefix + other_title.replace(' ', '_')
+        # print(other_title)
+        if cats:
+            q = mutual_cats( cats, other_title )
+            acc += int( q>0 )
+        print( f'{i+1}.' + row.format( other_title, str(round(pair[1], 2)), q if q else 0) )
+        
 
-    for i, pair in enumerate(similar_doc[0:10]):
-        print( f'{i+1}.' + row.format( pair[0], str(round(pair[1], 2)) ) )
 
 
+def mutual_cats( cats, other ):
+
+    try:
+        with open(f"../scraper/scraped/{other}.yaml", "r", encoding="utf-8") as yaml_file:
+            parsed = yaml.load(yaml_file, Loader=yaml.FullLoader)
+            other_cats = set( parsed['Categories'] )
+            # other_cats = set( parsed['Categories'] ).union( set( parsed['Hidden Categories'] ))
+    except:
+        print( f'No YAML file for {other}' )
+        return 0
+    q = len( cats.intersection( other_cats ) )
+    return q
 
 
 if __name__ == "__main__":
-    # simgine( 'Black panther' )
+
+
     # simgine( 'Jaguar' )
+    # simgine( 'Black panther' )
+    # simgine( 'Buick' )
 
 
+    '''
+    #       Lem     Stop        Vec     Ep      Time, min (cleaning + training)
+    1       -        +          100    250      0+11
+    2       +        -          100    250      3+22
+    3       +        +          100    250      1+8
+    4       -        -          100    250      0+18
+    5       +        +          100    250      1+9
+    
+    Best: 3?
+    '''
+
+
+    for i in range(1, 6):
+        simgine( 'Nintendo Switch', model_path=f'{i}_doc2vec.model' )
+    
+    # simgine( 'Nintendo Switch', model_path=f'3_doc2vec.model' )
+    # simgine( 'Nintendo Switch', model_path=f'doc2vec.model' )
+
+'''
+    # PLAYGROUND
     import os, random
-    articles = random.sample( os.listdir( '../scraper/scraped' ), 5 )
+    articles = os.listdir( '../scraper/scraped' )
+    random.shuffle( articles )
 
-    for fn in articles:
-        simgine( fn[:-4] )
+    i = 0
+    # for fn in 
+    # articles:
+    while i < 3:
+        fn = articles.pop()
+        # break
+        # print(fn)
+        if fn.endswith('.txt'):
+            simgine( fn[:-4] )
+            i+=1
 
-    '''
-    Top 10 Wikipedia articles most similar to Atari Jaguar:
 
-                    Article                            Cosine Sim 
-
-    1.              PlayStation (console)              0.59
-    2.              Panthera onca augusta              0.59
-    3.              TurboGrafx-16                      0.58
-    4.              Sonic's Ultimate Genesis Collection0.57
-    5.              Nintendo Entertainment System      0.57
-    6.              History of the Nintendo Entertainment System0.56
-    7.              TurboDuo                           0.55
-    8.              Atari 5200                         0.53
-    9.              North American jaguar              0.52
-    10.             Amiga CD32                         0.51
-    '''
+'''

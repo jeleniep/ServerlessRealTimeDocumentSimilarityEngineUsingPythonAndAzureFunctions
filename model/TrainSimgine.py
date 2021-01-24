@@ -1,4 +1,4 @@
-
+from tqdm import tqdm
 import os, re
 
 
@@ -40,7 +40,8 @@ nltk.download('averaged_perceptron_tagger')
 tokenizer = RegexpTokenizer(r'\w+')
 stopword_set = set(stopwords.words('english'))
 wordnet_lemmatizer = WordNetLemmatizer()
-print(len(stopword_set))
+
+# print(len(stopword_set))
 
 
 def get_wordnet_pos(word):
@@ -57,7 +58,8 @@ def get_wordnet_pos(word):
 def clean( data ):
 
     new = []
-    for d in data:
+    print('Cleaning:')
+    for d in tqdm(data):
         
         # 1. Lowercase
         new_str = d.lower()
@@ -70,9 +72,11 @@ def clean( data ):
         # print( f'Length: {len(tokens)} -> ', end='' )
 
         # 4. Remove stop words (a, the, he, she, etc.)
+        # porównanie ze stopwords i bez
         tokens = list(set(tokens).difference(stopword_set))
         
         # 5. Stemming: return to base form by part of speech
+        # też sprawdzić!
         tokens = [wordnet_lemmatizer.lemmatize(word, get_wordnet_pos(word)) for word in tokens]
         tokens = [x for x in tokens if len(x) > 2]
 
@@ -84,7 +88,7 @@ def clean( data ):
 
 
 cleaned = clean( content )
-len(cleaned)
+# len(cleaned)
 
 
 # Bigrams (not working?)
@@ -93,7 +97,7 @@ bigram = Phrases(cleaned)
 cleaned = [bigram[doc] for doc in cleaned]
 
 
-print(len(cleaned[0]), cleaned[0])
+# print(len(cleaned[0]), cleaned[0])
 # print([len(doc) for doc in cleaned])
 
 
@@ -105,7 +109,7 @@ dictionary = corpora.Dictionary(cleaned)
 
 
 corpus = [dictionary.doc2bow(text) for text in cleaned]
-print(len(corpus))
+# print(len(corpus))
 # print([len(bow) for bow in corpus])
 
 
@@ -122,10 +126,12 @@ tagged[0]
 
 
 # Parameters
+# bigger vectors? 300
+VEC_SIZE = 200
 
-VEC_SIZE = 100
+# *.99?
 LR = 0.025
-EPOCHS = 250
+EPOCHS = 100
 
 
 
@@ -138,6 +144,7 @@ model = Doc2Vec(
     window=2,
 
     # LR drops to this
+    # automatycznie??
     min_alpha=0.00025,
 
     # ignore words with 2 or less occurrences
@@ -153,8 +160,8 @@ model = Doc2Vec(
 model.build_vocab( tagged )
 # losses = []
 
-from tqdm import tqdm
 
+print('Training:')
 for epoch in tqdm( range(1, EPOCHS+1) ):
     
     # Forward pass
@@ -180,7 +187,8 @@ print(similar_doc)
 
 # # Saving
 
-from gensim.test.utils import get_tmpfile
-
-model.save('doc2vec.model')
+# fn = 'doc2vec.model'
+fn = '5_doc2vec.model'
+print(f'Saved {fn}')
+model.save(fn)
 # model = Doc2Vec.load(fname)
