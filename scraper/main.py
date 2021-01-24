@@ -6,10 +6,9 @@ from tqdm import tqdm
 
 import os, sys
 
-folderpath = 'scraped/'
+folderpath = "scraped/"
 if not os.path.exists(folderpath):
     os.makedirs(folderpath)
-
 
 
 def unwrap_all(content: Tag, tag: str):
@@ -23,7 +22,8 @@ def sanitize(content: Tag):
     # @pietkap
     try:
         toc = content.find("div", "toclimit-3")
-    except AttributeError:
+    except AttributeError as err:
+        print(err)
         return -1
 
     if toc:
@@ -68,7 +68,13 @@ def sanitize(content: Tag):
         i.replace_with("")
 
     content.smooth()
-    
+
+
+def extract_categories(categories):
+    cats = []
+    for item in categories.children:
+        cats.append(item.get_text())
+    return cats
 
 
 def scrap(text: str):
@@ -84,50 +90,64 @@ def scrap(text: str):
     # print(type(bodyContent))
 
     content = bodyContent.find(id="mw-content-text").div
+    categories = bodyContent.find(id="catlinks").div.ul
+    hidden_categories = bodyContent.find(id="mw-hidden-catlinks").ul
 
+    cats = extract_categories(categories)
+    hidden_cats = extract_categories(hidden_categories)
+    article_cats = {"Categories": cats, "Hidden Categories": hidden_cats}
     # @pietkap
     try:
-        abstract: Tag = content.find("p").find_next_sibling("p")
-    except AttributeError:
+        paragraphs: List[Tag] = content.find_all("p", attrs={"class": None})
+    except AttributeError as err:
+        print(err)
+        print(document_name)
         return -1
+    teksts: List[str] = []
+    for par in paragraphs:
+        resp = sanitize(par)
+        # print(resp)
+        if resp == -1:
+            return -1
+        unwrap_all(par, "b")
+        unwrap_all(par, "a")
+        unwrap_all(par, "i")
+        unwrap_all(par, "span")
 
-    resp = sanitize(abstract)
-    # print(resp)
-    if resp == -1:
-        return -1
-    unwrap_all(abstract, "b")
-    unwrap_all(abstract, "a")
-    unwrap_all(abstract, "i")
-    unwrap_all(abstract, "span")
-
-    abstract_text = abstract.get_text()
+        teksts.append(par.get_text())
 
     with open(f"{folderpath}{document_name}.txt", "w", encoding="utf-8") as f:
         # print( f'Saved to {folderpath}{document_name}.txt' )
-        f.write( abstract_text )
+        for i in teksts:
+            f.write(i)
+    with open(f"{folderpath}{document_name}.yaml", "w", encoding="utf-8") as f:
+        yaml.dump(article_cats, f)
 
 
 def main():
-    with open("urls.yml") as file:
+    with open("urls.yml", "r", encoding="utf-8") as file:
         urls = yaml.safe_load(file)
 
-    already = os.listdir( folderpath )
+    already = os.listdir(folderpath)
     errors = 0
     for url in tqdm(urls):
 
-        fn = url.split('/')[-1] + '.txt'
+        fn = url.split("/")[-1] + ".txt"
         if fn in already:
-            print( f'{fn} already exists' )
+            print(f"{fn} already exists")
             continue
 
         r = requests.get(url)
-        text = r.text
+        if r.status_code == 200:
+            text = r.text
 
-        if scrap(text) == -1:
-            print( f'Error writing {url}' )
-            errors += 1
-                
-    print( f'Brought {len(urls)-errors}/{len(urls)} articles.' )
+            if scrap(text) == -1:
+                print(f"Error writing {url}")
+                errors += 1
+        else:
+            print(f"Error fetching url: {url}")
+
+    print(f"Brought {len(urls)-errors}/{len(urls)} articles.")
 
 
 if __name__ == "__main__":
