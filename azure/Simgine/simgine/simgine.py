@@ -14,10 +14,13 @@ connection_string = os.getenv('AzureWebJobsStorage')
 service = BlobServiceClient.from_connection_string(conn_str=connection_string)
 
 
+
+
+
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
     blob = BlobClient.from_connection_string(
-        conn_str=connection_string, container_name="simgine-data", blob_name="doc2vec.model"
+        conn_str=connection_string, container_name="simgine-data", blob_name="3_doc2vec.model"
     )
     foldername = tempfile.gettempdir()
     print(foldername, flush=True)
