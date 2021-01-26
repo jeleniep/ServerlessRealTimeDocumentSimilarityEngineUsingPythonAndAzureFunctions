@@ -89,9 +89,12 @@ def scrap(text: str):
 
     # print(type(bodyContent))
 
-    content = bodyContent.find(id="mw-content-text").div
-    categories = bodyContent.find(id="catlinks").div.ul
-    hidden_categories = bodyContent.find(id="mw-hidden-catlinks").ul
+    try:
+        content = bodyContent.find(id="mw-content-text").div
+        categories = bodyContent.find(id="catlinks").div.ul
+        hidden_categories = bodyContent.find(id="mw-hidden-catlinks").ul
+    except:
+        return -1
 
     cats = extract_categories(categories)
     hidden_cats = extract_categories(hidden_categories)
@@ -147,7 +150,10 @@ def main():
         else:
             print(f"Error fetching url: {url}")
 
-    print(f"Brought {len(urls)-errors}/{len(urls)} articles.")
+    length = len(urls)
+    fetched = length-errors
+    rate = round( 100*fetched/length, 1 )
+    print(f"Brought {fetched}/{length} articles ({rate}).")
 
 
 if __name__ == "__main__":
