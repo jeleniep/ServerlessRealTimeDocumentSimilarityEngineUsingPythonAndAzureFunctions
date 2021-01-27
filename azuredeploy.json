@@ -73,10 +73,11 @@
             "location": "[parameters('location')]",
             "kind": "linux",
             "sku": {
-                "name": "F1"
+                "name": "Y1"
             },
             "properties": {
                 "name": "[variables('hostingPlanName')]",
+                "reserved": true,
                 "computeMode": "Dynamic"
             }
         },
@@ -109,7 +110,7 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~2"
+                            "value": "~3"
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",

@@ -5,7 +5,7 @@
 ```Bash
 az group create \
   --name SimgineNew \
-  --location "UK West"
+  --location "EU West"
 ```
 
 2. Create resources
@@ -17,4 +17,7 @@ az deployment group create \
   --template-file $templateFile
 ```
 3. Deploy function Simgine from "azure/Simgine" using from Visual Studio Code.
-   
+
+4. Run scraper.
+
+5. Upload scraped data from scraper and file with model to storage to container simgine-data.
