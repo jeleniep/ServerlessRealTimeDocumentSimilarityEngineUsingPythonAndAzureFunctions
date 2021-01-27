@@ -2,6 +2,10 @@
 
 Simgine: Serverless real-time document similarity engine using Python and Azure Functions
 
+## Demonstration
+
+https://www.youtube.com/watch?v=Vn-45k3_9So
+
 ## Functionalities
 
 For an end user:
