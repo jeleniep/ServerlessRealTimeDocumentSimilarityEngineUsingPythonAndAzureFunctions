@@ -5,20 +5,16 @@ Simgine: Serverless real-time document similarity engine using Python and Azure 
 ## Functionalities
 
 For an end user:
-  - Given a keyword system will return a response with articles 
+  - Given an article name system will return a response with articles 
   which are semantically similar to it
 
 Other functionalities not available to the end user:
-  - Parsing data
-  - Adding data to training set
-  - Train saved model
-  - Continuous monitoring of model's performance
-  - Ability to use the model independently from system's Architecture
+  - scraping web pages, extracting all of the relevant contents
+  - downloading scraped articles from azure blob storage
 
 ## Architecture
 
-Initial Data flow
-![Data Flow](./azure_data_flow.png)
+![Data Flow](./simgine.png)
 
 ## Technology Stack
 
