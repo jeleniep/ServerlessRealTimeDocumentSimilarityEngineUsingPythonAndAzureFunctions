@@ -6,15 +6,18 @@ Simgine: Serverless real-time document similarity engine using Python and Azure 
 
 For an end user:
   - Given an article name system will return a response with articles 
-  which are semantically similar to it
+  which are semantically similar to it, with included mutual categories as used by Wikipedia's internal system
 
 Other functionalities not available to the end user:
   - scraping web pages, extracting all of the relevant contents
   - downloading scraped articles from azure blob storage
+  - saving model to az blob storage
 
 ## Architecture
 
 ![Data Flow](./simgine.png)
+
+training and scraping initially were to performed inside Az functions function. However we concluded that it will add unnecessary complexity with diminishing returns. It was possible that Wikipedia could rate limit the scraper, scraper could produce much more data than we could handle. In case of trainer, it was a long running process, it was certain that a timeouts would occurs which would have caused problems along the way.
 
 ## Technology Stack
 
@@ -22,28 +25,18 @@ Other functionalities not available to the end user:
     - Blob Storage
     - Functions
 - Python 3.9 
-    - Scrapy
-    - Nltk (Natural language toolkit)
+    - requests
+    - PyYAML
+    - gensim
+    - azure-functions
+    - azure-storage-blob
 
 ## Wikipedia
 Wikipedia's robots.txt doesn't disallow scraping of article pages
 
 
-## Time table:
-
-
-| Date |What|Description|time|
-| --- |---|---|---|
-| 29.11 |Data model| how the article will be simplified
-| 3.12  |Scraper| processed data from wikipedia in compliance with it's policy
-| 6.12  |Blob storage policy (Scrapped Articles)|how to store articles in blob storage
-| 9.12  |Blob storage policy (Model)|how to store model in blob storage
-| 17.12 |Trainer| function for model learning
-| 14.01 |Searcher| end user accessible function
-
-
 ## Contributors
 
-- Piotr Jeleniewicz
-- Aleksei Haidukevich
-- Patryk Piętka
+- Piotr Jeleniewicz -> azure deployment
+- Aleksei Haidukevich -> model creation, testing
+- Patryk Piętka -> scraper, and project managing
